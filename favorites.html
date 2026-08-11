@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saved books · Digital E-Library</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="components.css">
+</head>
+<body>
+  <main class="page">
+    <header class="app-bar">
+      <h1 class="app-bar__title">Saved books</h1>
+    </header>
+
+    <p class="text-small text-muted" style="margin-bottom: var(--space-3)" id="saved-count"></p>
+
+    <div class="card-grid" id="favorites-grid"></div>
+  </main>
+
+  <div id="nav-placeholder"></div>
+
+  <script type="module" src="nav.js"></script>
+  <script type="module" src="favorites.js"></script>
+</body>
+</html>

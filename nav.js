@@ -15,39 +15,36 @@ const ICONS = {
 const BASE_ITEMS = [
   { page: "index",     href: "index.html",     label: "Home" },
   { page: "catalog",   href: "catalog.html",   label: "Catalog" },
-  { page: "favorites", href: "favorites.html", label: "Favorites" },
+  { page: "favorites", href: "favorites.html", label: "Saved" },
   { page: "borrowing", href: "borrowing.html", label: "Loans" },
   { page: "profile",   href: "profile.html",   label: "Profile" }
 ];
 
-const LIBRARIAN_ITEM = { page: "manage", href: "librarian/dashboard.html", label: "Manage" };
+const LIBRARIAN_ITEM = { page: "manage", href: "manage.html", label: "Manage" };
 
 function currentPageKey() {
-  const path = window.location.pathname.split("/").pop().replace(".html", "");
-  return path === "" ? "index" : path;
+  const file = window.location.pathname.split("/").pop().replace(".html", "");
+  return file === "" ? "index" : file;
 }
 
-// Detects whether the current page lives in a subfolder (e.g. /librarian/)
-// so links point the right number of directories up.
-function pathPrefix() {
-  const segments = window.location.pathname.split("/").filter(Boolean);
-  const lastSegment = segments[segments.length - 1] || "";
-  const inSubfolder = lastSegment.includes(".html") ? segments.length > 1 : segments.length > 0;
-  // crude but reliable check: are we inside /librarian/?
-  return window.location.pathname.includes("/librarian/") ? "../" : "";
+// book-detail has no tab of its own, so keep Catalog lit while viewing a book
+function activeKeyFor(pageKey) {
+  return pageKey === "book-detail" ? "catalog" : pageKey;
 }
 
-function buildNav(items, activeKey, prefix) {
+function buildNav(items) {
+  const activeKey = activeKeyFor(currentPageKey());
   const nav = document.createElement("nav");
   nav.className = "bottom-nav";
 
   items.forEach(item => {
-    const a = document.createElement("a");
-    a.href = prefix + item.href;
-    a.className = "nav-item" + (item.page === activeKey ? " active" : "");
-    a.dataset.page = item.page;
-    a.innerHTML = `<svg viewBox="0 0 24 24">${ICONS[item.page]}</svg><span>${item.label}</span>`;
-    nav.appendChild(a);
+    const link = document.createElement("a");
+    link.href = item.href;
+    link.className = "nav-item" + (item.page === activeKey ? " active" : "");
+    link.dataset.page = item.page;
+    link.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[item.page]}</svg><span>${item.label}</span>`;
+    if (item.page === activeKey) link.setAttribute("aria-current", "page");
+    nav.appendChild(link);
   });
 
   return nav;
@@ -56,23 +53,23 @@ function buildNav(items, activeKey, prefix) {
 function renderNav(items) {
   const placeholder = document.getElementById("nav-placeholder");
   if (!placeholder) return;
-  const prefix = pathPrefix();
-  placeholder.innerHTML = "";
-  placeholder.appendChild(buildNav(items, currentPageKey(), prefix));
+  placeholder.replaceChildren(buildNav(items));
 }
 
-// Render the student/lecturer nav immediately, then upgrade to include
-// "Manage" once we know the signed-in user's role.
-renderNav(BASE_ITEMS);
-
+// the nav is drawn only once the role is known — rendering the five base tabs
+// first and adding "Manage" afterwards made the whole bar jump for librarians
 onAuthStateChanged(auth, async (user) => {
-  if (!user) return;
+  if (!user) {
+    renderNav(BASE_ITEMS);
+    return;
+  }
+
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
-    if (snap.exists() && snap.data().role === "librarian") {
-      renderNav([...BASE_ITEMS, LIBRARIAN_ITEM]);
-    }
+    const isLibrarian = snap.exists() && snap.data().role === "librarian";
+    renderNav(isLibrarian ? [...BASE_ITEMS, LIBRARIAN_ITEM] : BASE_ITEMS);
   } catch (err) {
     console.error("Could not load user role for nav:", err);
+    renderNav(BASE_ITEMS);
   }
 });

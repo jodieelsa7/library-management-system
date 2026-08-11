@@ -4,13 +4,15 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
+  height: var(--nav-height);
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 100;
+  /* keeps the tabs clear of the home indicator on iPhones */
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .nav-item {
@@ -20,6 +22,9 @@
   gap: 2px;
   color: var(--color-text-muted);
   font-size: 0.7rem;
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-1) 0;
 }
 
 .nav-item svg {
@@ -31,6 +36,7 @@
 
 .nav-item.active {
   color: var(--color-primary);
+  font-weight: 600;
 }
 
 /* ===== Search bar ===== */
@@ -41,7 +47,15 @@
   background: var(--color-surface);
   border-radius: var(--radius-full);
   padding: var(--space-2) var(--space-3);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-bar svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--color-text-muted);
+  fill: none;
+  flex-shrink: 0;
 }
 
 .search-bar input {
@@ -49,7 +63,17 @@
   outline: none;
   background: transparent;
   flex: 1;
+  min-width: 0;
   color: var(--color-text);
+  padding: var(--space-1) 0;
+}
+
+.search-bar__clear {
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 var(--space-1);
 }
 
 /* ===== Category chips ===== */
@@ -58,6 +82,12 @@
   gap: var(--space-2);
   overflow-x: auto;
   padding: var(--space-2) 0;
+  /* hides the scrollbar without blocking the scroll itself */
+  scrollbar-width: none;
+}
+
+.chip-row::-webkit-scrollbar {
+  display: none;
 }
 
 .chip {
@@ -69,6 +99,8 @@
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
+  border: 1px solid transparent;
 }
 
 .chip.active {
@@ -76,43 +108,183 @@
   color: var(--color-surface);
 }
 
-/* ===== Book card ===== */
+/* ===== Hero banner ===== */
+.banner {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #1D3FA8 100%);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-md);
+}
+
+.banner h2 {
+  font-size: 1.15rem;
+  margin-bottom: var(--space-1);
+}
+
+.banner p {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.88rem;
+  margin-bottom: var(--space-3);
+}
+
+.banner .btn {
+  background: #fff;
+  color: var(--color-primary);
+}
+
+/* ===== Book cover ===== */
+.cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* stands in for a missing cover image — the initials and hue come from utils.js
+   so the same book always gets the same tile */
+.cover__initials {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+/* ===== Book card (grid) ===== */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
 .book-card {
   background: var(--color-surface);
   border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.book-card img {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  background: var(--color-primary-light);
+.book-card:hover,
+.book-card:focus-within {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.book-card .cover {
+  border-radius: 0;
 }
 
 .book-card__body {
   padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
 }
 
+/* two-line clamp keeps every card in a row exactly the same height,
+   whatever the title length */
 .book-card__title {
   font-weight: 600;
   font-size: 0.9rem;
-  white-space: nowrap;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .book-card__author {
   font-size: 0.78rem;
   color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+/* ===== Horizontal carousel ===== */
+.carousel {
+  display: flex;
   gap: var(--space-3);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel .book-card {
+  width: 132px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+/* ===== Book row (list) ===== */
+.book-row {
+  display: flex;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  box-shadow: var(--shadow-sm);
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.book-row .cover {
+  width: 60px;
+  aspect-ratio: 3 / 4;
+}
+
+.book-row .cover__initials {
+  font-size: 1rem;
+}
+
+.book-row__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-1) 0;
+}
+
+.book-row__title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.book-row__meta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.book-row__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
 }
 
 /* ===== Buttons ===== */
@@ -120,16 +292,23 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-2);
   border: none;
   border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-4);
+  padding: 10px var(--space-4);
   font-weight: 600;
   cursor: pointer;
+  text-align: center;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 
 .btn-primary {
   background: var(--color-primary);
   color: var(--color-surface);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
 }
 
 .btn-secondary {
@@ -140,6 +319,21 @@
 .btn-danger {
   background: var(--color-danger);
   color: var(--color-surface);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-sm {
+  padding: 6px var(--space-3);
+  font-size: 0.82rem;
 }
 
 .btn:disabled {
@@ -163,10 +357,92 @@
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: var(--space-2);
+  padding: 10px var(--space-2);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 84px;
+}
+
+.form-hint {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+/* form-level error, shown above the submit button */
+.form-error {
+  background: #FEE2E2;
+  color: #991B1B;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.85rem;
+  margin-bottom: var(--space-3);
+}
+
+.form-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+/* ===== Auth pages ===== */
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4) var(--space-3);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-4);
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-card__brand {
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.auth-card__brand h1 {
+  font-size: 1.4rem;
+  color: var(--color-primary);
+}
+
+.auth-card__brand p {
+  font-size: 0.88rem;
+}
+
+.auth-switch {
+  text-align: center;
+  font-size: 0.88rem;
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.auth-switch a {
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 /* ===== Status badges ===== */
@@ -178,6 +454,386 @@
   font-weight: 600;
 }
 
-.badge-success { background: #DCFCE7; color: var(--color-success); }
-.badge-warning { background: #FEF3C7; color: var(--color-warning); }
-.badge-danger  { background: #FEE2E2; color: var(--color-danger); }
+.badge-success { background: #DCFCE7; color: #15803D; }
+.badge-warning { background: #FEF3C7; color: #B45309; }
+.badge-danger  { background: #FEE2E2; color: #B91C1C; }
+.badge-neutral { background: var(--color-border); color: var(--color-text-muted); }
+
+/* ===== Book detail ===== */
+.detail-hero {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.detail-hero .cover {
+  width: 128px;
+  box-shadow: var(--shadow-md);
+}
+
+.detail-hero__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.detail-hero__title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.detail-hero__author {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.detail-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.detail-actions .btn {
+  flex: 1;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-light);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--color-primary);
+  fill: none;
+}
+
+/* filled bookmark when the book is saved */
+.icon-btn.is-active {
+  background: var(--color-primary);
+}
+
+.icon-btn.is-active svg {
+  stroke: #fff;
+  fill: #fff;
+}
+
+.meta-list {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+.meta-list__item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  font-size: 0.88rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.meta-list__item:last-child {
+  border-bottom: none;
+}
+
+.meta-list__label {
+  color: var(--color-text-muted);
+}
+
+.meta-list__value {
+  font-weight: 600;
+  text-align: right;
+}
+
+/* ===== Loan row ===== */
+.loan-row {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+.loan-row__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.loan-row__title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.loan-row__dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+/* ===== Tabs ===== */
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
+  padding: var(--space-1);
+  margin-bottom: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab {
+  flex: 1;
+  padding: var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  text-align: center;
+}
+
+.tab.active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ===== Modal ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 31, 107, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+  padding: 0;
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal__panel {
+  background: var(--color-surface);
+  width: 100%;
+  max-width: 520px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--space-4);
+  /* the form can be taller than the phone, so scroll inside the sheet */
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.modal__close {
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0 var(--space-1);
+}
+
+@media (min-width: 640px) {
+  .modal {
+    align-items: center;
+    padding: var(--space-4);
+  }
+
+  .modal__panel {
+    border-radius: var(--radius-lg);
+  }
+}
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--nav-height) + var(--space-3));
+  transform: translate(-50%, 16px);
+  background: var(--color-text);
+  color: #fff;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  max-width: calc(100vw - 32px);
+  text-align: center;
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.toast--success { background: var(--color-success); }
+.toast--error   { background: var(--color-danger); }
+
+/* ===== Loading / empty / error states ===== */
+.state {
+  text-align: center;
+  padding: var(--space-5) var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.state--error {
+  color: var(--color-danger);
+}
+
+/* holds roughly the height of a loaded list so the page doesn't jump
+   when the spinner is swapped for real content */
+.state--loading {
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* the states are dropped into grid and flex containers, so they need to span
+   the full row rather than sit in the first cell */
+.card-grid .state,
+.carousel .state,
+.stack .state {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.spinner {
+  display: inline-block;
+  width: 26px;
+  height: 26px;
+  border: 3px solid var(--color-primary-light);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-bottom: var(--space-2);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== Upload progress ===== */
+.progress {
+  height: 6px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--space-2);
+}
+
+.progress__bar {
+  height: 100%;
+  width: 0;
+  background: var(--color-primary);
+  transition: width 0.2s ease;
+}
+
+/* ===== Data table (librarian) ===== */
+.table-wrap {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  /* wide tables scroll on their own instead of stretching the page */
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  min-width: 560px;
+}
+
+th, td {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  background: #F8FAFC;
+  white-space: nowrap;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+td .row {
+  gap: var(--space-1);
+}
+
+/* ===== Stat tiles ===== */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.stat {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.stat__label {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+/* ===== Wider screens ===== */
+@media (min-width: 640px) {
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .page--wide .card-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

@@ -1,22 +1,32 @@
+<!--
+  Reference markup only — nav.js builds this same structure in JavaScript so it
+  can mark the active tab and add the librarian-only "Manage" item.
+  Keep this file in sync with the ICONS map in nav.js if the icons change.
+-->
 <nav class="bottom-nav">
   <a href="index.html" class="nav-item" data-page="index">
-    <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <span>Home</span>
   </a>
   <a href="catalog.html" class="nav-item" data-page="catalog">
-    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke-width="2" stroke-linecap="round"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke-width="2" stroke-linecap="round"/></svg>
     <span>Catalog</span>
   </a>
   <a href="favorites.html" class="nav-item" data-page="favorites">
-    <svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3z" stroke-width="2" stroke-linejoin="round"/></svg>
-    <span>Favorites</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4V3z" stroke-width="2" stroke-linejoin="round"/></svg>
+    <span>Saved</span>
   </a>
   <a href="borrowing.html" class="nav-item" data-page="borrowing">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><path d="M12 7v5l3 3" stroke-width="2" stroke-linecap="round"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke-width="2"/><path d="M12 7v5l3 3" stroke-width="2" stroke-linecap="round"/></svg>
     <span>Loans</span>
   </a>
   <a href="profile.html" class="nav-item" data-page="profile">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke-width="2"/><path d="M4 21c1.5-4 6-6 8-6s6.5 2 8 6" stroke-width="2" stroke-linecap="round"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" stroke-width="2"/><path d="M4 21c1.5-4 6-6 8-6s6.5 2 8 6" stroke-width="2" stroke-linecap="round"/></svg>
     <span>Profile</span>
+  </a>
+  <!-- librarian only, appended by nav.js -->
+  <a href="manage.html" class="nav-item" data-page="manage">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2"/><path d="M9 9h6v6H9z" stroke-width="2"/></svg>
+    <span>Manage</span>
   </a>
 </nav>

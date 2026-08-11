@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalogue · Digital E-Library</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="components.css">
+</head>
+<body>
+  <main class="page">
+    <header class="app-bar">
+      <h1 class="app-bar__title">Catalogue</h1>
+    </header>
+
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="7" stroke-width="2"/>
+        <path d="M21 21l-4.3-4.3" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <label class="sr-only" for="search-input">Search books</label>
+      <input type="search" id="search-input" placeholder="Search by title, author or topic">
+      <button type="button" class="search-bar__clear hidden" id="clear-search" aria-label="Clear search">×</button>
+    </div>
+
+    <div class="chip-row" id="category-chips"></div>
+
+    <div class="row row--between" style="margin-bottom: var(--space-3)">
+      <span class="text-small text-muted" id="result-count"></span>
+      <label class="text-small text-muted row" style="gap: var(--space-1)">
+        <input type="checkbox" id="available-only" style="width:auto">
+        Available only
+      </label>
+    </div>
+
+    <div class="card-grid" id="book-grid"></div>
+  </main>
+
+  <div id="nav-placeholder"></div>
+
+  <script type="module" src="nav.js"></script>
+  <script type="module" src="catalog.js"></script>
+</body>
+</html>

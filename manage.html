@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage · Digital E-Library</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="components.css">
+</head>
+<body>
+  <main class="page page--wide">
+    <header class="app-bar">
+      <h1 class="app-bar__title">Manage library</h1>
+      <button type="button" class="btn btn-primary btn-sm" id="add-book-btn">Add book</button>
+    </header>
+
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="stat__value" id="stat-books">–</div>
+        <div class="stat__label">Titles</div>
+      </div>
+      <div class="stat">
+        <div class="stat__value" id="stat-copies">–</div>
+        <div class="stat__label">Total copies</div>
+      </div>
+      <div class="stat">
+        <div class="stat__value" id="stat-onloan">–</div>
+        <div class="stat__label">On loan</div>
+      </div>
+      <div class="stat">
+        <div class="stat__value" id="stat-overdue">–</div>
+        <div class="stat__label">Overdue</div>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Catalogue</h2>
+        <button type="button" class="btn btn-ghost btn-sm hidden" id="seed-btn">Add sample books</button>
+      </div>
+      <div id="books-panel"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Borrowing records</h2>
+      </div>
+      <div id="loans-panel"></div>
+    </section>
+  </main>
+
+  <div id="nav-placeholder"></div>
+
+  <script type="module" src="nav.js"></script>
+  <script type="module" src="manage.js"></script>
+</body>
+</html>

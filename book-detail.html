@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book · Digital E-Library</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="components.css">
+</head>
+<body>
+  <main class="page">
+    <header class="app-bar">
+      <a href="catalog.html" class="app-bar__action" id="back-link" aria-label="Back to catalogue">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 5l-7 7 7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <h1 class="app-bar__title">Book details</h1>
+    </header>
+
+    <div id="content"></div>
+  </main>
+
+  <div id="nav-placeholder"></div>
+
+  <script type="module" src="nav.js"></script>
+  <script type="module" src="book-detail.js"></script>
+</body>
+</html>

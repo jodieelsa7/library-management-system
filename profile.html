@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile · Digital E-Library</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="components.css">
+</head>
+<body>
+  <main class="page">
+    <header class="app-bar">
+      <h1 class="app-bar__title">Profile</h1>
+    </header>
+
+    <div class="text-center" style="margin-bottom: var(--space-4)">
+      <div class="avatar avatar--lg" id="avatar" style="margin: 0 auto var(--space-2)"></div>
+      <h2 id="profile-name">…</h2>
+      <p class="text-small" id="profile-email"></p>
+      <div style="margin-top: var(--space-2)"><span class="badge badge-neutral" id="profile-role"></span></div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="stat__value" id="stat-active">–</div>
+        <div class="stat__label">On loan</div>
+      </div>
+      <div class="stat">
+        <div class="stat__value" id="stat-total">–</div>
+        <div class="stat__label">Total borrowed</div>
+      </div>
+      <div class="stat">
+        <div class="stat__value" id="stat-saved">–</div>
+        <div class="stat__label">Saved</div>
+      </div>
+    </div>
+
+    <section class="section">
+      <h2 style="font-size:1.05rem; margin-bottom: var(--space-3)">Your details</h2>
+
+      <form id="profile-form" novalidate>
+        <div class="form-error hidden" id="form-error" role="alert"></div>
+
+        <div class="form-group">
+          <label for="name">Full name</label>
+          <input type="text" id="name" name="name" autocomplete="name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone" autocomplete="tel" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" disabled>
+          <p class="form-hint">Your email and role can't be changed here.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="save-btn">Save changes</button>
+      </form>
+    </section>
+
+    <button type="button" class="btn btn-ghost btn-block" id="logout-btn">Sign out</button>
+  </main>
+
+  <div id="nav-placeholder"></div>
+
+  <script type="module" src="nav.js"></script>
+  <script type="module" src="profile.js"></script>
+</body>
+</html>

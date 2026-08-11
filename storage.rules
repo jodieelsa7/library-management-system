@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// Cloud Storage holds the uploaded PDF/EPUB copies. Storage rules can read
+// Firestore, so the librarian check uses the same role field as firestore.rules.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isLibrarian() {
+      return isSignedIn()
+             && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'librarian';
+    }
+
+    match /books/{fileName} {
+      // any signed-in member can open a book file
+      allow read: if isSignedIn();
+
+      // only librarians upload or replace them, and the size cap here backs up
+      // the same limit checked in storage.js before the upload starts
+      allow write: if isLibrarian()
+                   && request.resource.size < 25 * 1024 * 1024;
+    }
+
+    // No other path is listed, and anything not explicitly allowed is denied,
+    // so the rest of the bucket stays unreachable without an extra rule.
+  }
+}

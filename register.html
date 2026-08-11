@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create account · Digital E-Library</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="components.css">
+</head>
+<body class="no-nav">
+  <main class="auth-wrap">
+    <div class="auth-card hidden" id="auth-card">
+      <div class="auth-card__brand">
+        <h1>Create your account</h1>
+        <p>Join the digital library</p>
+      </div>
+
+      <form id="register-form" novalidate>
+        <div class="form-error hidden" id="form-error" role="alert"></div>
+
+        <div class="form-group">
+          <label for="name">Full name</label>
+          <input type="text" id="name" name="name" autocomplete="name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="role">I am a</label>
+            <select id="role" name="role" required>
+              <option value="student">Student</option>
+              <option value="lecturer">Lecturer</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone" autocomplete="tel" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="new-password" required>
+          <p class="form-hint">At least 6 characters.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="confirm">Confirm password</label>
+          <input type="password" id="confirm" name="confirm" autocomplete="new-password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="submit-btn">Create account</button>
+      </form>
+
+      <p class="auth-switch">
+        Already registered? <a href="login.html">Sign in</a>
+      </p>
+    </div>
+  </main>
+
+  <script type="module" src="register.js"></script>
+</body>
+</html>

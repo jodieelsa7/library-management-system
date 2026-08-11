@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home · Digital E-Library</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="components.css">
+</head>
+<body>
+  <main class="page">
+    <header class="greeting">
+      <div>
+        <div class="greeting__label">Welcome back,</div>
+        <div class="greeting__name" id="user-name">…</div>
+      </div>
+      <a href="profile.html" class="avatar" id="user-avatar" aria-label="Open your profile"></a>
+    </header>
+
+    <form class="search-bar" id="search-form" role="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="7" stroke-width="2"/>
+        <path d="M21 21l-4.3-4.3" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <label class="sr-only" for="search-input">Search books</label>
+      <input type="search" id="search-input" placeholder="Search books or authors">
+    </form>
+
+    <div class="chip-row" id="category-chips"></div>
+
+    <section class="section">
+      <div class="banner">
+        <h2 id="banner-title">Your library</h2>
+        <p id="banner-text">Loading your activity…</p>
+        <a class="btn btn-sm" href="borrowing.html">View my loans</a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Available now</h2>
+        <a href="catalog.html">See all</a>
+      </div>
+      <div class="carousel" id="available-books"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Browse the catalogue</h2>
+        <a href="catalog.html">See all</a>
+      </div>
+      <div class="card-grid" id="recent-books"></div>
+    </section>
+  </main>
+
+  <div id="nav-placeholder"></div>
+
+  <script type="module" src="nav.js"></script>
+  <script type="module" src="index.js"></script>
+</body>
+</html>
