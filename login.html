@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#EAF6F6">
+  <title>Sign in · Digital E-Library</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="no-nav" data-page="login">
+  <main class="auth-wrap">
+    <div class="auth-card hidden" id="auth-card">
+      <div class="auth-card__brand">
+        <div class="auth-card__logo">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 5a2 2 0 012-2h13v18H6a2 2 0 01-2-2z" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M9 3v18" stroke-width="2"/>
+          </svg>
+        </div>
+        <h1>Digital E-Library</h1>
+        <p>Sign in to browse and borrow</p>
+      </div>
+
+      <form id="login-form" novalidate>
+        <div class="form-error hidden" id="form-error" role="alert"></div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="submit-btn">Sign in</button>
+      </form>
+
+      <p class="auth-switch">
+        Don't have an account? <a href="register.html">Create one</a>
+      </p>
+    </div>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

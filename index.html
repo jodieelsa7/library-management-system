@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#EAF6F6">
+  <title>Home · Digital E-Library</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="index">
+  <main class="page">
+    <form class="search-bar" id="search-form" role="search" style="margin-top: var(--s-3)">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="7" stroke-width="2"/>
+        <path d="M21 21l-4.3-4.3" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <label class="sr-only" for="search-input">Search books</label>
+      <input type="search" id="search-input" placeholder="Search">
+    </form>
+
+    <div class="chip-row" id="category-chips"></div>
+
+    <div class="hero" id="hero"></div>
+
+    <section class="section" id="authors-section" style="margin-top: var(--s-5)">
+      <div class="section-head">
+        <h2>Authors</h2>
+        <a class="section-head__more" href="catalog.html" aria-label="Browse all authors">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+      <div class="author-row" id="authors-row"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Recommended</h2>
+        <a class="section-head__more" href="catalog.html" aria-label="See the full catalogue">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+      <div class="carousel" id="recommended"></div>
+    </section>
+  </main>
+
+  <div id="nav-placeholder"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

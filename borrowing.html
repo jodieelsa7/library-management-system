@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#EAF6F6">
+  <title>My loans · Digital E-Library</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="borrowing">
+  <main class="page">
+    <header class="app-bar">
+      <a href="profile.html" class="app-bar__action" aria-label="Back to your profile">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 5l-7 7 7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <h1 class="app-bar__title">My loans</h1>
+    </header>
+
+    <div class="tabs" id="tabs">
+      <button type="button" class="tab active" data-tab="active">On loan</button>
+      <button type="button" class="tab" data-tab="history">History</button>
+      <button type="button" class="tab hidden" data-tab="all">All loans</button>
+    </div>
+
+    <div class="stack" id="loan-list"></div>
+  </main>
+
+  <div id="nav-placeholder"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

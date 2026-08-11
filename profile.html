@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#EAF6F6">
+  <title>Profile · Digital E-Library</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="profile">
+  <main class="page">
+    <header class="app-bar">
+      <h1 class="app-bar__title">Profile</h1>
+    </header>
+
+    <div class="center" style="margin-bottom: var(--s-4)">
+      <div class="avatar avatar--lg" id="avatar" style="margin: 0 auto var(--s-3)"></div>
+      <h2 id="profile-name">…</h2>
+      <p class="small" id="profile-email"></p>
+      <div style="margin-top: var(--s-2)">
+        <span class="badge badge-neutral" id="profile-role"></span>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="stat__value" id="stat-active">–</div>
+        <div class="stat__label">On loan</div>
+      </div>
+      <div class="stat">
+        <div class="stat__value" id="stat-total">–</div>
+        <div class="stat__label">Total borrowed</div>
+      </div>
+      <div class="stat">
+        <div class="stat__value" id="stat-saved">–</div>
+        <div class="stat__label">Saved</div>
+      </div>
+    </div>
+
+    <div class="menu">
+      <a class="menu__item" href="borrowing.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke-width="2"/>
+          <path d="M12 7v5l3 3" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>My loans and history</span>
+        <svg class="menu__chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a class="menu__item" href="favorites.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 3h12v18l-6-4-6 4V3z" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span>Saved books</span>
+        <svg class="menu__chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a class="menu__item hidden" href="manage.html" id="manage-link">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2"/>
+          <path d="M9 9h6v6H9z" stroke-width="2"/>
+        </svg>
+        <span>Manage the library</span>
+        <svg class="menu__chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+
+    <section class="section">
+      <h2 style="font-size:1.05rem; margin-bottom: var(--s-3)">Your details</h2>
+
+      <form id="profile-form" novalidate>
+        <div class="form-error hidden" id="form-error" role="alert"></div>
+
+        <div class="form-group">
+          <label for="name">Full name</label>
+          <input type="text" id="name" name="name" autocomplete="name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone" autocomplete="tel" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" disabled>
+          <p class="form-hint">Your email and role can't be changed here.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="save-btn">Save changes</button>
+      </form>
+    </section>
+
+    <button type="button" class="btn btn-ghost btn-block" id="logout-btn">Sign out</button>
+  </main>
+
+  <div id="nav-placeholder"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
