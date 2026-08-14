@@ -19,6 +19,36 @@ export const CATEGORIES = [
   "History"
 ];
 
+/* How a title is held by the library.
+
+   physical — printed copies only. Borrow one, return it in 14 days.
+   digital  — an online copy and nothing else. Everyone can open it at once,
+              so there are no copies to run out and no due date. This is the
+              queue-free access the proposal promises.
+   both     — printed copies to borrow, and an online copy to read right away. */
+export const FORMATS = {
+  physical: "Physical copy",
+  digital: "Digital only",
+  both: "Physical and digital"
+};
+
+// a digital or hybrid title can be opened online by anyone signed in
+export function hasDigitalCopy(book) {
+  return (book.format === "digital" || book.format === "both") && Boolean(book.fileUrl);
+}
+
+// only titles with printed copies go through the borrow and return flow.
+// Books saved before the format field existed are treated as physical.
+export function isBorrowable(book) {
+  return book.format !== "digital";
+}
+
+// digital titles never run out, so they always count as available
+export function isAvailable(book) {
+  if (!isBorrowable(book)) return true;
+  return book.availableCopies > 0;
+}
+
 /* ===== Formatting helpers ===== */
 
 // Everything user-entered passes through this before touching innerHTML,
@@ -294,7 +324,9 @@ export function filterBooks(books, { term = "", category = "All", author = "", a
   return books.filter(book => {
     if (category && category !== "All" && book.category !== category) return false;
     if (author && book.author !== author) return false;
-    if (availableOnly && book.availableCopies <= 0) return false;
+    // isAvailable, not availableCopies — a digital title has no copies to
+    // count and must never be filtered out as unavailable
+    if (availableOnly && !isAvailable(book)) return false;
     return matchesTerm(book, term);
   });
 }

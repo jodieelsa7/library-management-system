@@ -31,7 +31,7 @@ import {
   runTransaction
 } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 
-import { addDays, toDate, LOAN_PERIOD_DAYS } from "./ui.js";
+import { addDays, toDate, isBorrowable, LOAN_PERIOD_DAYS } from "./ui.js";
 
 // These values identify the project and are public by design. Access is
 // controlled by the Firestore security rules, not by hiding this config.
@@ -180,7 +180,10 @@ function normaliseCopies(value) {
 // document as well, matching the ERD rather than relying on the Firestore id.
 export async function addBook(data) {
   const ref = doc(booksRef);
-  const totalCopies = normaliseCopies(data.totalCopies);
+  const format = data.format || "physical";
+  // a digital-only title has no printed stock, so its counts stay at zero
+  // rather than holding a number the borrow flow would then act on
+  const totalCopies = format === "digital" ? 0 : normaliseCopies(data.totalCopies);
 
   await setDoc(ref, {
     bookID: ref.id,
@@ -188,6 +191,7 @@ export async function addBook(data) {
     author: data.author.trim(),
     category: data.category,
     description: (data.description || "").trim(),
+    format,
     totalCopies,
     availableCopies: totalCopies,
     coverUrl: data.coverUrl || null,
@@ -217,7 +221,12 @@ export async function updateBook(bookId, updates) {
 
   const payload = { ...updates };
 
-  if (updates.totalCopies !== undefined) {
+  if (payload.format === "digital") {
+    // switching a title to digital-only retires its printed stock; any copy
+    // still out on loan is closed the normal way from the loans table
+    payload.totalCopies = 0;
+    payload.availableCopies = 0;
+  } else if (updates.totalCopies !== undefined) {
     const newTotal = normaliseCopies(updates.totalCopies);
     const onLoan = current.totalCopies - current.availableCopies;
     payload.totalCopies = newTotal;
@@ -275,6 +284,9 @@ export async function borrowBook(user, profile, bookId) {
     if (!bookSnap.exists()) throw new Error("This book is no longer in the catalogue.");
 
     const book = bookSnap.data();
+    // a digital-only title is read online instead of borrowed, so there is
+    // nothing to check out and nothing to give back
+    if (!isBorrowable(book)) throw new Error("This title is read online — there's nothing to borrow.");
     if (book.availableCopies <= 0) throw new Error("No copies are available right now.");
 
     transaction.update(bookRef, { availableCopies: book.availableCopies - 1 });

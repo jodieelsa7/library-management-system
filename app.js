@@ -14,7 +14,8 @@ import {
 } from "./firebase.js";
 
 import {
-  CATEGORIES, escapeHtml, safeUrl, formatDate, isOverdue, getQueryParam, debounce,
+  CATEGORIES, FORMATS, isBorrowable, hasDigitalCopy,
+  escapeHtml, safeUrl, formatDate, isOverdue, getQueryParam, debounce,
   showToast, friendlyError, setButtonLoading, renderState, svg,
   coverHtml, bookCardHtml, authorHtml, renderBookGrid, loanRowHtml, loanStatus,
   filterBooks, categoriesInUse, authorsFrom, buildNotifications, urgentCount,
@@ -143,10 +144,12 @@ async function homePage() {
     return;
   }
 
-  chipsEl.innerHTML = categoriesInUse(books)
-    .filter(category => category !== "All")
-    .map(category => `<a class="chip" href="catalog.html?category=${encodeURIComponent(category)}">${escapeHtml(category)}</a>`)
-    .join("");
+  // "All" leads the row and stays highlighted, as in the prototype — home is
+  // the unfiltered view, so it is the option currently in effect
+  chipsEl.innerHTML = categoriesInUse(books).map(category => category === "All"
+    ? '<a class="chip active" href="catalog.html">All</a>'
+    : `<a class="chip" href="catalog.html?category=${encodeURIComponent(category)}">${escapeHtml(category)}</a>`
+  ).join("");
 
   if (!books.length) {
     heroEl.classList.add("hidden");
@@ -378,18 +381,38 @@ async function bookDetailPage() {
   }
 
   function render(book, activeLoan, saved) {
-    const availability = book.availableCopies > 0
-      ? `<span class="badge badge-success">${book.availableCopies} of ${book.totalCopies} available</span>`
-      : '<span class="badge badge-danger">All copies on loan</span>';
-
-    let action;
-    if (activeLoan) action = '<button class="btn btn-secondary" id="return-btn">Return book</button>';
-    else if (book.availableCopies <= 0) action = '<button class="btn btn-primary" disabled>Unavailable</button>';
-    else action = '<button class="btn btn-primary" id="borrow-btn">Borrow</button>';
-
+    const borrowable = isBorrowable(book);
+    const digital = hasDigitalCopy(book);
     const fileUrl = safeUrl(book.fileUrl);
-    const fileButton = fileUrl
-      ? `<a class="btn btn-ghost btn-block" href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener noreferrer">Open digital copy</a>`
+
+    // A digital title is never "on loan" to anybody, so it advertises instant
+    // access instead of a copy count.
+    let availability;
+    if (!borrowable) {
+      availability = '<span class="badge badge-success">Read online — no waiting</span>';
+    } else if (book.availableCopies > 0) {
+      availability = `<span class="badge badge-success">${book.availableCopies} of ${book.totalCopies} available</span>`;
+    } else {
+      availability = '<span class="badge badge-danger">All copies on loan</span>';
+    }
+
+    // Reading online is the main action when there are no copies to borrow;
+    // otherwise borrowing leads and reading online sits underneath.
+    let action;
+    if (!borrowable) {
+      action = digital
+        ? `<a class="btn btn-primary" href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener noreferrer">Read online</a>`
+        : '<button class="btn btn-primary" disabled>Not available yet</button>';
+    } else if (activeLoan) {
+      action = '<button class="btn btn-secondary" id="return-btn">Return book</button>';
+    } else if (book.availableCopies <= 0) {
+      action = '<button class="btn btn-primary" disabled>All copies on loan</button>';
+    } else {
+      action = '<button class="btn btn-primary" id="borrow-btn">Borrow</button>';
+    }
+
+    const fileButton = digital && borrowable
+      ? `<a class="btn btn-ghost btn-block" href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener noreferrer">Read online instead</a>`
       : "";
 
     const description = book.description
@@ -425,8 +448,11 @@ async function bookDetailPage() {
 
       <div class="meta-list">
         <div class="meta-list__item"><span class="meta-list__label">Category</span><span class="meta-list__value">${escapeHtml(book.category)}</span></div>
+        <div class="meta-list__item"><span class="meta-list__label">Format</span><span class="meta-list__value">${escapeHtml(FORMATS[book.format] || FORMATS.physical)}</span></div>
+        ${borrowable ? `
         <div class="meta-list__item"><span class="meta-list__label">Total copies</span><span class="meta-list__value">${book.totalCopies}</span></div>
-        <div class="meta-list__item"><span class="meta-list__label">Available</span><span class="meta-list__value">${book.availableCopies}</span></div>
+        <div class="meta-list__item"><span class="meta-list__label">Available</span><span class="meta-list__value">${book.availableCopies}</span></div>` : `
+        <div class="meta-list__item"><span class="meta-list__label">Readers at once</span><span class="meta-list__value">Unlimited</span></div>`}
         ${activeLoan ? `<div class="meta-list__item"><span class="meta-list__label">Your due date</span><span class="meta-list__value">${formatDate(activeLoan.dueDate)}</span></div>` : ""}
       </div>
 
@@ -734,30 +760,44 @@ async function profilePage() {
    Manage (librarian only)
    ========================================================================== */
 
-// Seeded with the titles and authors shown in the prototype, so a fresh
-// database reproduces the designed home screen straight away. Cover art comes
-// from the Open Library cover service — no Cloud Storage involved.
+/* Seeded with the titles and authors drawn in the prototype, so a fresh
+   database reproduces the designed home screen straight away.
+
+   Cover art and author portraits both come from the Open Library image
+   service, addressed by ISBN and by author id. Nothing is uploaded, so none
+   of this needs Cloud Storage. The four authors the design shows on the home
+   screen — Rowling, Christie, Tolkien and Shakespeare — all have portraits
+   there, which is what makes the Authors row match the mockup. */
 const SAMPLE_BOOKS = [
-  { title: "The Fellowship of the Ring", author: "J.R.R. Tolkien", category: "Fiction", totalCopies: 3, featured: true,
-    isbn: "9780618574940", description: "The first part of The Lord of the Rings." },
-  { title: "Harry Potter and the Philosopher's Stone", author: "J.K. Rowling", category: "Kids", totalCopies: 4, featured: true,
-    isbn: "9780747532699", description: "A boy discovers he is a wizard on his eleventh birthday." },
-  { title: "Murder on the Orient Express", author: "Agatha Christie", category: "Fiction", totalCopies: 2, featured: true,
-    isbn: "9780062073501", description: "Hercule Poirot investigates a murder aboard a snowbound train." },
-  { title: "Hamlet", author: "William Shakespeare", category: "Education", totalCopies: 5,
-    isbn: "9780743477123", description: "The tragedy of the Prince of Denmark.",
+  { title: "The Fellowship of the Ring", author: "J.R.R. Tolkien", category: "Fiction", format: "physical", totalCopies: 3, featured: true,
+    isbn: "9780618574940", olid: "OL26320A", description: "The first part of The Lord of the Rings." },
+  { title: "Harry Potter and the Philosopher's Stone", author: "J.K. Rowling", category: "Kids", format: "physical", totalCopies: 4, featured: true,
+    isbn: "9780747532699", olid: "OL23919A", description: "A boy discovers he is a wizard on his eleventh birthday." },
+  { title: "Murder on the Orient Express", author: "Agatha Christie", category: "Fiction", format: "physical", totalCopies: 2, featured: true,
+    isbn: "9780062073501", olid: "OL27695A", description: "Hercule Poirot investigates a murder aboard a snowbound train." },
+
+  // out of copyright, so the full text can be linked and read by anyone at once
+  { title: "Hamlet", author: "William Shakespeare", category: "Education", format: "both", totalCopies: 5, featured: true,
+    isbn: "9780743477123", olid: "OL9388A", description: "The tragedy of the Prince of Denmark.",
     fileUrl: "https://www.gutenberg.org/ebooks/1524" },
-  { title: "The Library Book", author: "Susan Orlean", category: "Education", totalCopies: 2,
+  { title: "Pride and Prejudice", author: "Jane Austen", category: "Fiction", format: "digital", featured: true,
+    isbn: "9780141439518", olid: "OL21594A", description: "Elizabeth Bennet, Mr Darcy, and the manners of Regency England.",
+    fileUrl: "https://www.gutenberg.org/ebooks/1342" },
+  { title: "Frankenstein", author: "Mary Shelley", category: "Fiction", format: "digital",
+    isbn: "9780141439471", olid: "OL25342A", description: "A student of unnatural philosophy and the creature he assembles.",
+    fileUrl: "https://www.gutenberg.org/ebooks/84" },
+
+  { title: "The Library Book", author: "Susan Orlean", category: "Education", format: "physical", totalCopies: 2,
     isbn: "9781476740188", description: "The 1986 Los Angeles Central Library fire, and libraries themselves." },
-  { title: "Atomic Habits", author: "James Clear", category: "Motivation", totalCopies: 3,
-    isbn: "9780735211292", description: "An easy and proven way to build good habits." },
-  { title: "Clean Code", author: "Robert C. Martin", category: "Technology", totalCopies: 3,
-    isbn: "9780132350884", description: "A handbook of agile software craftsmanship." },
-  { title: "Sapiens", author: "Yuval Noah Harari", category: "History", totalCopies: 2,
-    isbn: "9780062316097", description: "A brief history of humankind." },
-  { title: "Thinking, Fast and Slow", author: "Daniel Kahneman", category: "Science", totalCopies: 2,
-    isbn: "9780374533557", description: "How two systems of thought shape our judgement." },
-  { title: "The Lean Startup", author: "Eric Ries", category: "Business", totalCopies: 3,
+  { title: "Atomic Habits", author: "James Clear", category: "Motivation", format: "physical", totalCopies: 3,
+    isbn: "9780735211292", olid: "OL7422948A", description: "An easy and proven way to build good habits." },
+  { title: "Clean Code", author: "Robert C. Martin", category: "Technology", format: "physical", totalCopies: 3,
+    isbn: "9780132350884", olid: "OL2653686A", description: "A handbook of agile software craftsmanship." },
+  { title: "Sapiens", author: "Yuval Noah Harari", category: "History", format: "physical", totalCopies: 2,
+    isbn: "9780062316097", olid: "OL3778242A", description: "A brief history of humankind." },
+  { title: "Thinking, Fast and Slow", author: "Daniel Kahneman", category: "Science", format: "physical", totalCopies: 2,
+    isbn: "9780374533557", olid: "OL2066695A", description: "How two systems of thought shape our judgement." },
+  { title: "The Lean Startup", author: "Eric Ries", category: "Business", format: "physical", totalCopies: 3,
     isbn: "9780307887894", description: "Building businesses through validated learning." }
 ];
 
@@ -790,13 +830,14 @@ async function managePage() {
     }
 
     booksPanel.innerHTML = `<div class="table-wrap"><table>
-      <thead><tr><th>Title</th><th>Author</th><th>Category</th><th>Available</th><th>Featured</th><th></th></tr></thead>
+      <thead><tr><th>Title</th><th>Author</th><th>Category</th><th>Format</th><th>Available</th><th>Featured</th><th></th></tr></thead>
       <tbody>${books.map(book => `
         <tr>
           <td><a href="book-detail.html?id=${encodeURIComponent(book.bookID)}"><strong>${escapeHtml(book.title)}</strong></a></td>
           <td>${escapeHtml(book.author)}</td>
           <td>${escapeHtml(book.category)}</td>
-          <td>${book.availableCopies} / ${book.totalCopies}</td>
+          <td>${escapeHtml(FORMATS[book.format] || FORMATS.physical)}</td>
+          <td>${isBorrowable(book) ? `${book.availableCopies} / ${book.totalCopies}` : "Unlimited"}</td>
           <td>${book.featured ? "Yes" : "—"}</td>
           <td><div class="row">
             <button type="button" class="btn btn-ghost btn-sm" data-edit="${escapeHtml(book.bookID)}">Edit</button>
@@ -852,7 +893,12 @@ async function managePage() {
       for (const book of SAMPLE_BOOKS) {
         await addBook({
           ...book,
-          coverUrl: `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`
+          coverUrl: `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`,
+          // not every author has a portrait on Open Library; the ones without
+          // fall back to the initials disc, so only set it where one exists
+          authorPhotoUrl: book.olid
+            ? `https://covers.openlibrary.org/a/olid/${book.olid}-M.jpg`
+            : null
         });
       }
       showToast(`Added ${SAMPLE_BOOKS.length} sample books.`, "success");
@@ -956,9 +1002,18 @@ function buildModal() {
             </select>
           </div>
           <div class="form-group">
-            <label for="bf-copies">Total copies</label>
-            <input type="number" id="bf-copies" name="totalCopies" min="0" step="1" value="1" required>
+            <label for="bf-format">Format</label>
+            <select id="bf-format" name="format">
+              ${Object.entries(FORMATS).map(([value, label]) =>
+                `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`).join("")}
+            </select>
           </div>
+        </div>
+
+        <div class="form-group" data-copies-group>
+          <label for="bf-copies">Total copies</label>
+          <input type="number" id="bf-copies" name="totalCopies" min="0" step="1" value="1" required>
+          <p class="form-hint">How many printed copies the library holds.</p>
         </div>
 
         <div class="form-group">
@@ -981,7 +1036,7 @@ function buildModal() {
         <div class="form-group">
           <label for="bf-file">Digital copy URL</label>
           <input type="url" id="bf-file" name="fileUrl" placeholder="https://…">
-          <p class="form-hint">Optional. Link to the PDF or EPUB, e.g. on Project Gutenberg.</p>
+          <p class="form-hint" data-file-hint>Link to the PDF or EPUB, e.g. on Project Gutenberg.</p>
         </div>
 
         <div class="form-group">
@@ -1036,6 +1091,7 @@ function openBookForm({ book = null, onSaved } = {}) {
     fields.title.value = book.title || "";
     fields.author.value = book.author || "";
     fields.category.value = CATEGORIES.includes(book.category) ? book.category : CATEGORIES[0];
+    fields.format.value = FORMATS[book.format] ? book.format : "physical";
     fields.totalCopies.value = book.totalCopies ?? 1;
     fields.description.value = book.description || "";
     fields.coverUrl.value = book.coverUrl || "";
@@ -1043,6 +1099,22 @@ function openBookForm({ book = null, onSaved } = {}) {
     fields.fileUrl.value = book.fileUrl || "";
     fields.featured.checked = Boolean(book.featured);
   }
+
+  // A digital-only title has no printed copies, so asking for a number would
+  // only invite a value the borrow flow then has to ignore.
+  const copiesGroup = modal.querySelector("[data-copies-group]");
+  const fileHint = modal.querySelector("[data-file-hint]");
+
+  function syncFormat() {
+    const digitalOnly = fields.format.value === "digital";
+    copiesGroup.classList.toggle("hidden", digitalOnly);
+    fileHint.textContent = fields.format.value === "physical"
+      ? "Optional for a printed title."
+      : "Required — this is what readers open online.";
+  }
+
+  fields.format.onchange = syncFormat;
+  syncFormat();
 
   modal.hidden = false;
   fields.title.focus();
@@ -1056,6 +1128,7 @@ function openBookForm({ book = null, onSaved } = {}) {
       title: fields.title.value.trim(),
       author: fields.author.value.trim(),
       category: fields.category.value,
+      format: fields.format.value,
       description: fields.description.value.trim(),
       coverUrl: fields.coverUrl.value.trim() || null,
       authorPhotoUrl: fields.authorPhotoUrl.value.trim() || null,
@@ -1070,7 +1143,16 @@ function openBookForm({ book = null, onSaved } = {}) {
     }
 
     if (!values.title || !values.author) return fail("Title and author are both required.");
-    if (isNaN(values.totalCopies) || values.totalCopies < 0) return fail("Total copies must be zero or more.");
+
+    // a title readers are meant to open online is useless without the link,
+    // so refuse it here rather than shipping a dead "Read online" button
+    if (values.format !== "physical" && !values.fileUrl) {
+      return fail("A digital title needs a digital copy URL — that's what readers open.");
+    }
+
+    if (values.format !== "digital" && (isNaN(values.totalCopies) || values.totalCopies < 0)) {
+      return fail("Total copies must be zero or more.");
+    }
 
     // reject anything that isn't a real http(s) link before it reaches the
     // database, so a bad paste can't turn into a broken image or a script URL

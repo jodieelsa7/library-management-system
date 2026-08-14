@@ -25,6 +25,19 @@ document instead of uploaded files. That means:
 The sample books use cover images from the Open Library cover service, plus one
 full public-domain text (Hamlet, from Project Gutenberg).
 
+## How a title is held
+
+Every book has a `format`, which decides whether it is borrowed or simply read.
+
+| Format | Copies | What the reader gets |
+| --- | --- | --- |
+| `physical` | Yes | Borrow one copy, return it within 14 days |
+| `digital` | No | Opens online straight away, any number of readers at once, no due date |
+| `both` | Yes | Borrow a printed copy, or read the online one without waiting |
+
+Digital titles never run out, which is the queue-free access the proposal is
+built around. Books saved before this field existed are treated as `physical`.
+
 ## Roles
 
 | Role | Can do |
@@ -41,7 +54,7 @@ reject any attempt to self-assign the role.
 
 **users/{uid}** — `userID`, `email`, `name`, `role`, `phone`
 **users/{uid}/favorites/{bookID}** — `bookID`, `title`, `author`, `category`, `coverUrl`, `addedAt`
-**books/{bookID}** — `bookID`, `title`, `author`, `category`, `description`, `totalCopies`, `availableCopies`, `coverUrl`, `authorPhotoUrl`, `fileUrl`, `featured`
+**books/{bookID}** — `bookID`, `title`, `author`, `category`, `format`, `description`, `totalCopies`, `availableCopies`, `coverUrl`, `authorPhotoUrl`, `fileUrl`, `featured`
 **borrowing/{loanID}** — `loanID`, `userID`, `userName`, `bookID`, `bookTitle`, `bookAuthor`, `borrowedDate`, `dueDate`, `returnedDate`, `isLate`
 
 `bookTitle`, `bookAuthor` and `userName` are copied onto each loan so the loans
