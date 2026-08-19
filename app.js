@@ -32,12 +32,57 @@ async function loginPage() {
   const errorBox = document.getElementById("form-error");
   const submitBtn = document.getElementById("submit-btn");
 
-  // the form stays hidden until we know there is no session to restore,
-  // otherwise a signed-in visitor sees it flash before being redirected
+  const MAX_ATTEMPTS = 3;
+
+  // Check if a lockdown timer is currently active
+  const lockUntil = localStorage.getItem("loginLockoutUntil");
+  if (lockUntil) {
+    const remainingTime = Math.ceil((parseInt(lockUntil, 10) - Date.now()) / 1000);
+    if (remainingTime > 0) {
+      startLockout(remainingTime);
+    } else {
+      clearLockoutData();
+    }
+  }
+
+  function clearLockoutData() {
+    localStorage.removeItem("loginLockoutUntil");
+    localStorage.removeItem("loginFailedAttempts");
+  }
+
+  function startLockout(seconds) {
+    submitBtn.disabled = true;
+    let currentSeconds = seconds;
+
+    const updateTimerText = () => {
+      errorBox.textContent = `Too many failed attempts. Try again in ${currentSeconds}s.`;
+      errorBox.classList.remove("hidden");
+    };
+
+    updateTimerText();
+
+    const countdown = setInterval(() => {
+      currentSeconds -= 1;
+      if (currentSeconds <= 0) {
+        clearInterval(countdown);
+        clearLockoutData();
+        errorBox.classList.add("hidden");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Sign in";
+      } else {
+        updateTimerText();
+      }
+    }, 1000);
+  }
+
+  // Hide form until we check if user is already signed in
   if (!(await redirectIfSignedIn())) card.classList.remove("hidden");
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+
+    if (submitBtn.disabled) return;
+
     errorBox.classList.add("hidden");
 
     const email = form.elements.email.value.trim();
@@ -52,15 +97,30 @@ async function loginPage() {
     setButtonLoading(submitBtn, true, "Signing in…");
     try {
       await loginUser(email, password);
+      clearLockoutData(); // Reset on successful login
       window.location.replace("index.html");
     } catch (error) {
-      errorBox.textContent = friendlyError(error);
-      errorBox.classList.remove("hidden");
       setButtonLoading(submitBtn, false);
+
+      // Increment failed attempts count
+      let attempts = parseInt(localStorage.getItem("loginFailedAttempts") || "0", 10) + 1;
+      localStorage.setItem("loginFailedAttempts", attempts.toString());
+
+      if (attempts >= MAX_ATTEMPTS) {
+        // Trigger 1-minute (60,000 ms) lockout after 3 failed attempts
+        const lockoutTime = Date.now() + 60000;
+        localStorage.setItem("loginLockoutUntil", lockoutTime.toString());
+        startLockout(60);
+      } else {
+        // Show normal error + remaining attempts
+        const remaining = MAX_ATTEMPTS - attempts;
+        const errMessage = friendlyError(error);
+        errorBox.textContent = `${errMessage} (${remaining} attempt${remaining > 1 ? "s" : ""} left)`;
+        errorBox.classList.remove("hidden");
+      }
     }
   });
 }
-
 /* ==========================================================================
    Register
    ========================================================================== */
