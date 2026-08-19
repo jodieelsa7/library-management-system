@@ -4,18 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#EAF6F6">
-  <title>Saved books · Digital E-Library</title>
+  <title>Alerts · Digital E-Library</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body data-page="favorites">
+<body data-page="notifications">
   <main class="page">
     <header class="app-bar">
-      <h1 class="app-bar__title">Saved books</h1>
+      <h1 class="app-bar__title">Alerts</h1>
+      <a href="borrowing.html" class="btn btn-ghost btn-sm">My loans</a>
     </header>
 
-    <p class="small muted" style="margin-bottom: var(--s-3)" id="saved-count"></p>
+    <p class="small muted" style="margin-bottom: var(--s-3)">
+      Due dates and overdue books, worked out from your current loans.
+    </p>
 
-    <div class="card-grid" id="favorites-grid"></div>
+    <div class="stack" id="notice-list"></div>
   </main>
 
   <div id="nav-placeholder"></div>

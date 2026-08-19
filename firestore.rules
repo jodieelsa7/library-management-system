@@ -1,0 +1,88 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isLibrarian() {
+      return isSignedIn() && getUserData().role == 'librarian';
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Borrowing has to change availableCopies on the book, but books are
+    // otherwise librarian-only. This narrows that hole to exactly what
+    // borrowing and returning need: one field, one step at a time, never
+    // outside the real stock range.
+    function isCopyAdjustment() {
+      let incoming = request.resource.data;
+      let current = resource.data;
+      return isSignedIn()
+             && incoming.diff(current).affectedKeys().hasOnly(['availableCopies'])
+             && incoming.availableCopies >= 0
+             && incoming.availableCopies <= current.totalCopies
+             && (incoming.availableCopies == current.availableCopies - 1
+                 || incoming.availableCopies == current.availableCopies + 1);
+    }
+
+    // USERS
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isLibrarian();
+
+      // Self-registration only — role can be 'student' or 'lecturer',
+      // never 'librarian'. Librarian accounts must be promoted manually
+      // by editing the document in the Firebase console.
+      allow create: if isOwner(userId)
+                    && request.resource.data.role in ['student', 'lecturer'];
+
+      // Users can edit their own profile but not their own role.
+      // Librarians can edit anyone, including role.
+      allow update: if isLibrarian()
+                    || (isOwner(userId)
+                        && request.resource.data.role == resource.data.role);
+
+      allow delete: if isLibrarian();
+
+      // Per-user saved books, scoped entirely to the owning user
+      match /favorites/{bookId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // BOOKS — any signed-in user can browse; only librarians manage the
+    // catalogue, apart from the copy-count adjustment described above
+    match /books/{bookId} {
+      allow read: if isSignedIn();
+      allow create, delete: if isLibrarian();
+      allow update: if isLibrarian() || isCopyAdjustment();
+    }
+
+    // BORROWING — users create their own loan and read only their own history;
+    // both the borrower and a librarian can close a loan, but neither can
+    // reassign it to a different user or book
+    match /borrowing/{loanId} {
+      allow read: if isSignedIn()
+                  && (resource.data.userID == request.auth.uid || isLibrarian());
+
+      allow create: if isSignedIn()
+                    && request.resource.data.userID == request.auth.uid
+                    && request.resource.data.returnedDate == null;
+
+      allow update: if isLibrarian()
+                    || (isOwner(resource.data.userID)
+                        && request.resource.data.userID == resource.data.userID
+                        && request.resource.data.bookID == resource.data.bookID);
+
+      allow delete: if isLibrarian();
+    }
+  }
+}
