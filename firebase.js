@@ -14,7 +14,8 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile,
-  deleteUser
+  deleteUser,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
 import {
   getFirestore,
@@ -395,4 +396,8 @@ export async function getFavorites(userId) {
       const bDate = toDate(b.addedAt);
       return (bDate ? bDate.getTime() : 0) - (aDate ? aDate.getTime() : 0);
     });
+}
+
+export async function resetPassword(email) {
+  return sendPasswordResetEmail(auth, email);
 }
