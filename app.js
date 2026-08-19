@@ -10,7 +10,7 @@ import {
   requireAuth, redirectIfSignedIn, registerUser, loginUser, logoutUser, saveProfile,
   getAllBooks, getBook, addBook, updateBook, deleteBook,
   borrowBook, returnBook, getLoansByUser, getAllLoans, getActiveLoanForBook,
-  isFavorite, toggleFavorite, getFavorites
+  isFavorite, toggleFavorite, getFavorites, resetPassword
 } from "./firebase.js";
 
 import {
@@ -27,6 +27,12 @@ import {
    ========================================================================== */
 
 async function loginPage() {
+  // 1. Check if the URL has ?mode=reset
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("mode") === "reset") {
+    return handleForgotPassword();
+  }
+
   const card = document.getElementById("auth-card");
   const form = document.getElementById("login-form");
   const errorBox = document.getElementById("form-error");
@@ -34,7 +40,7 @@ async function loginPage() {
 
   const MAX_ATTEMPTS = 3;
 
-  // Check if a lockdown timer is currently active
+  // 2. Check if a lockout timer is currently active
   const lockUntil = localStorage.getItem("loginLockoutUntil");
   if (lockUntil) {
     const remainingTime = Math.ceil((parseInt(lockUntil, 10) - Date.now()) / 1000);
@@ -78,6 +84,7 @@ async function loginPage() {
   // Hide form until we check if user is already signed in
   if (!(await redirectIfSignedIn())) card.classList.remove("hidden");
 
+  // 3. Handle login submission
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -97,12 +104,12 @@ async function loginPage() {
     setButtonLoading(submitBtn, true, "Signing in…");
     try {
       await loginUser(email, password);
-      clearLockoutData(); // Reset on successful login
+      clearLockoutData(); // Reset lock counters on success
       window.location.replace("index.html");
     } catch (error) {
       setButtonLoading(submitBtn, false);
 
-      // Increment failed attempts count
+      // Increment failed attempt count
       let attempts = parseInt(localStorage.getItem("loginFailedAttempts") || "0", 10) + 1;
       localStorage.setItem("loginFailedAttempts", attempts.toString());
 
@@ -1264,4 +1271,68 @@ if (PAGES[page]) {
   await PAGES[page]();
 } else {
   console.warn(`No page handler for data-page="${page}"`);
+}
+
+
+async function handleForgotPassword() {
+  const card = document.getElementById("auth-card");
+  if (!card) return;
+
+  // Render the Forgot Password form view
+  card.innerHTML = `
+    <h2>Reset Password</h2>
+    <p style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">
+      Enter your email address and we'll send you a link to reset your password.
+    </p>
+    <div id="reset-msg" class="hidden"></div>
+    <form id="reset-password-form">
+      <div class="form-group">
+        <label for="reset-email">Email</label>
+        <input type="email" id="reset-email" name="email" required />
+      </div>
+      <button type="submit" id="reset-btn" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+        Send Reset Link
+      </button>
+      <div style="text-align: center; margin-top: 1rem;">
+        <a href="login.html" style="font-size: 0.85rem;">Back to Sign In</a>
+      </div>
+    </form>
+  `;
+
+  card.classList.remove("hidden");
+
+  const form = document.getElementById("reset-password-form");
+  const msgBox = document.getElementById("reset-msg");
+  const resetBtn = document.getElementById("reset-btn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = form.elements.email.value.trim();
+
+    if (!email) return;
+
+    setButtonLoading(resetBtn, true, "Sending...");
+
+    try {
+      await resetPassword(email);
+      
+      msgBox.className = "badge badge-success";
+      msgBox.style.display = "block";
+      msgBox.style.padding = "10px";
+      msgBox.style.marginBottom = "1rem";
+      msgBox.textContent = "Password reset email sent! Check your inbox.";
+      msgBox.classList.remove("hidden");
+      
+      form.reset();
+    } catch (error) {
+      msgBox.className = "badge badge-warning";
+      msgBox.style.display = "block";
+      msgBox.style.padding = "10px";
+      msgBox.style.marginBottom = "1rem";
+      msgBox.textContent = friendlyError(error) || "Failed to send reset email. Please try again.";
+      msgBox.classList.remove("hidden");
+    } finally {
+      setButtonLoading(resetBtn, false, "Send Reset Link");
+    }
+  });
 }
