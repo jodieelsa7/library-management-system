@@ -471,7 +471,9 @@ async function bookDetailPage() {
         ? `<a class="btn btn-primary" href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener noreferrer">Read online</a>`
         : '<button class="btn btn-primary" disabled>Not available yet</button>';
     } else if (activeLoan) {
-      action = '<button class="btn btn-secondary" id="return-btn">Return book</button>';
+  action = isLibrarian 
+    ? '<button class="btn btn-secondary" id="return-btn">Return book</button>'
+    : '<span class="badge badge-warning">Currently borrowed — return to librarian</span>';
     } else if (book.availableCopies <= 0) {
       action = '<button class="btn btn-primary" disabled>All copies on loan</button>';
     } else {
@@ -693,7 +695,7 @@ async function borrowingPage() {
     // on your own list every row would say the same thing
     listEl.innerHTML = loans.map(loan => loanRowHtml(loan, {
       showBorrower: currentTab === "all",
-      showReturnButton: currentTab === "all" ? isLibrarian : true
+      showReturnButton: isLibrarian
     })).join("");
   }
 
@@ -1314,7 +1316,7 @@ async function handleForgotPassword() {
     setButtonLoading(resetBtn, true, "Sending...");
 
     try {
-      await resetPassword(email);
+      await resetPassword(email);``
       
       msgBox.className = "badge badge-success";
       msgBox.style.display = "block";
